@@ -112,9 +112,9 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
   }
 
   // To prevent database spamming, since using free deployment platform
-  if ((await ExerciseLog.count({ where: { user_id: user.id } })) >= 5) {
-    return res.json({ error: "limit reached" });
-  }
+  // if ((await ExerciseLog.count({ where: { user_id: user.id } })) >= 5) {
+  //   return res.json({ error: "limit reached" });
+  // }
 
   if (req.body.description === null || req.body.description === "") {
     return res.json({ error: "description is empty" });
@@ -132,33 +132,12 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
   });
   res.json({
     username: user.username,
-    description: exerciseLog.description,
-    duration: exerciseLog.duration,
-    date: new Date(exerciseLog.date).toDateString(),
     _id: user.id,
-  });
-});
-
-app.get("/api/users/:_id/exercises", async (req, res) => {
-  const user = await User.findByPk(req.params._id);
-  if (user === null) {
-    return res.json({ error: "user not found" });
-  }
-
-  const exercises = await ExerciseLog.findAll({
-    where: { user_id: user.id },
-    order: [["date", "DESC"]],
-  });
-  const newExercises = exercises.map((exercise) => ({
-    description: exercise.description,
-    duration: exercise.duration,
-    date: new Date(exercise.date),
-  }));
-
-  res.json({
-    username: user.username,
-    _id: user.id,
-    exercise: newExercises,
+    exercise: {
+      description: exerciseLog.description,
+      duration: exerciseLog.duration,
+      date: new Date(exerciseLog.date).toDateString(),
+    },
   });
 });
 
