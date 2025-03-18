@@ -11,9 +11,5 @@
     "express": "^4.16.4",
     "cors": "^2.8.5"
   },
-  "license": "MIT",
-  "keywords": [
-    "node",
-    "express"
-  ]
+  "license": "MIT"
 }
