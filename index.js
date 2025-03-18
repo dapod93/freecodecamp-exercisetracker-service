@@ -156,14 +156,13 @@ app.get("/api/users/:_id/logs", async (req, res) => {
     },
     limit: limit ? parseInt(limit, 10) : 5,
     order: [["date", "DESC"]],
-  });
-  const newExerciseLogs = exerciseLogs.map((exerciseLog) => ({
+  }).map((exerciseLog) => ({
     description: exerciseLog.description,
     duration: exerciseLog.duration,
     date: new Date(exerciseLog.date).toDateString(),
   }));
 
-  res.json({ username: user.username, count: logCount, _id: user.id, log: newExerciseLogs });
+  res.json({ username: user.username, count: logCount, _id: user.id, log: exerciseLogs });
 });
 
 const listener = app.listen(process.env.PORT || 3000, () => {
