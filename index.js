@@ -93,7 +93,7 @@ app.post("/api/users", async (req, res) => {
 
 app.get("/api/users", async (req, res) => {
   const users = await User.findAll();
-  if (users === null) {
+  if (users.length == 0) {
     return res.json({ error: "users is empty" });
   }
 
