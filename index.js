@@ -91,6 +91,20 @@ app.post("/api/users", async (req, res) => {
   });
 });
 
+app.get("/api/users", async (req, res) => {
+  const users = await User.findAll();
+  if (users === null) {
+    return res.json({ error: "users is empty" });
+  }
+
+  const newUsers = users.map((user) => ({
+    username: user.username,
+    _id: user.id,
+  }));
+
+  res.json(newUsers);
+});
+
 app.post("/api/users/:_id/exercises", async (req, res) => {
   const user = await User.findByPk(req.params._id);
   if (user === null) {
