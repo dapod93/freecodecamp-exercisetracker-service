@@ -1,5 +1,5 @@
 require("dotenv").config();
-const { Sequelize, Model, DataTypes } = require("sequelize");
+const { Sequelize, Model, DataTypes, Op } = require("sequelize");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const crypto = require("crypto");
@@ -84,17 +84,20 @@ app.post("/api/users", async (req, res) => {
   }
 
   const user = await User.create({ username: inputUsername });
-  res.json({ username: user.username, _id: user.id });
+  res.json({
+    username: user.username,
+    _id: user.id,
+  });
 });
 
 app.post("/api/users/:_id/exercises", async (req, res) => {
-  if ((await ExerciseLog.count()) >= 5) {
-    return res.json({ error: "limit reached" });
+  const user = await User.findByPk(req.params._id);
+  if (user === null) {
+    return res.json({ error: "user not found" });
   }
 
-  const user = await User.findByPk(req.params.id);
-  if (user === null) {
-    return res.json({ error: "user not exists" });
+  if ((await ExerciseLog.count({ where: { user_id: user.id } })) >= 5) {
+    return res.json({ error: "limit reached" });
   }
 
   if (req.body.description === null || req.body.description === "") {
@@ -105,13 +108,50 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
     return res.json({ error: "duration is empty" });
   }
 
-  const exerciseLog = await ExerciseLog.create({ user_id: req.params.id, description: req.body.description, duration: req.body.duration, date: req.body.date });
+  const exerciseLog = await ExerciseLog.create({
+    user_id: user.id,
+    description: req.body.description,
+    duration: req.body.duration,
+    date: req.body.date,
+  });
   res.json({
     username: user.username,
     description: exerciseLog.description,
     duration: exerciseLog.duration,
-    date: exerciseLog.date,
+    date: new Date(exerciseLog.date).toDateString(),
     _id: user.id,
+  });
+});
+
+app.get("/api/users/:_id/logs", async (req, res) => {
+  const [from, to, limit] = req.query;
+  const user = await User.findByPk(req.params._id);
+  if (user === null) {
+    return res.json({ error: "user not found" });
+  }
+
+  const logCount = await ExerciseLog.count({ where: { user_id: user.id } });
+  if (logCount == 0) {
+    return res.json({ error: "logs not found" });
+  }
+
+  const exerciseLogs = await ExerciseLog.findAll({
+    where: {
+      user_id: user.id,
+      date:
+        from && to
+          ? {
+              [Op.gte]: new Date(from),
+              [Op.lte]: new Date(to),
+            }
+          : from
+          ? { [Op.gte]: new Date(from) }
+          : to
+          ? { [Op.lte]: new Date(to) }
+          : undefined,
+    },
+    limit: limit ? parseInt(limit, 10) : 5,
+    order: [["date", "DESC"]],
   });
 });
 
