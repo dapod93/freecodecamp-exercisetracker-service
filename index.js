@@ -163,7 +163,12 @@ app.get("/api/users/:_id/logs", async (req, res) => {
     date: new Date(exerciseLog.date).toDateString(),
   }));
 
-  res.json({ username: user.username, count: logCount, _id: user.id, log: newExerciseLogs });
+  res.json({
+    username: user.username,
+    count: logCount,
+    _id: user.id,
+    log: newExerciseLogs,
+  });
 });
 
 const listener = app.listen(process.env.PORT || 3000, () => {
