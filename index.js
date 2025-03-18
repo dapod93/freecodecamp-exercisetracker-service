@@ -14,15 +14,19 @@ User.init(
   },
   { sequelize, modelName: "users" }
 );
-User.hasMany(ExerciseLog);
 
 class ExerciseLog extends Model {}
-ExerciseLog.init({
-  user_id: DataTypes.INTEGER,
-  description: DataTypes.STRING,
-  duration: DataTypes.INTEGER,
-  date: DataTypes.TIME,
-});
+ExerciseLog.init(
+  {
+    user_id: DataTypes.INTEGER,
+    description: DataTypes.STRING,
+    duration: DataTypes.INTEGER,
+    date: DataTypes.TIME,
+  },
+  { sequelize, modelName: "exercise_logs" }
+);
+
+User.hasMany(ExerciseLog);
 ExerciseLog.belongsTo(User, { foreignKey: "user_id" });
 
 sequelize.sync();
@@ -32,6 +36,10 @@ app.use(express.static("public"));
 app.use(bodyParser.urlencoded({ extended: false }));
 
 app.get("/", (req, res) => {
+  res.sendFile(__dirname + "/views/index.html");
+});
+
+app.get("/api/", async (req, res) => {
   res.sendFile(__dirname + "/views/index.html");
 });
 
