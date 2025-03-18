@@ -54,7 +54,7 @@ app.post("/api/users", async (req, res) => {
   }
 
   const user = await User.create({ username: inputUsername });
-  res.json({ _id: user.id, username: user.username });
+  res.json({ username: user.username, _id: user.id });
 });
 
 const listener = app.listen(process.env.PORT || 3000, () => {
