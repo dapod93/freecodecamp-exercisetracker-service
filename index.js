@@ -2,6 +2,7 @@ require("dotenv").config();
 const { Sequelize, Model, DataTypes } = require("sequelize");
 const bodyParser = require("body-parser");
 const cors = require("cors");
+const crypto = require("crypto");
 const express = require("express");
 
 const app = express();
@@ -10,7 +11,16 @@ const sequelize = new Sequelize({ dialect: "sqlite", storage: "db.sqlite" });
 class User extends Model {}
 User.init(
   {
-    username: DataTypes.STRING,
+    id: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      primaryKey: true,
+      defaultValue: () => crypto.randomBytes(12).toString("hex"),
+    },
+    username: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
   },
   { sequelize, modelName: "users" }
 );
@@ -18,10 +28,30 @@ User.init(
 class ExerciseLog extends Model {}
 ExerciseLog.init(
   {
-    user_id: DataTypes.INTEGER,
-    description: DataTypes.STRING,
-    duration: DataTypes.INTEGER,
-    date: DataTypes.TIME,
+    id: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      primaryKey: true,
+      defaultValue: () => crypto.randomBytes(12).toString("hex"),
+    },
+    user_id: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      references: { model: User, key: "id" },
+      onDelete: "CASCADE",
+    },
+    description: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    duration: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    date: {
+      type: DataTypes.TIME,
+      allowNull: true,
+    },
   },
   { sequelize, modelName: "exercise_logs" }
 );
@@ -55,6 +85,34 @@ app.post("/api/users", async (req, res) => {
 
   const user = await User.create({ username: inputUsername });
   res.json({ username: user.username, _id: user.id });
+});
+
+app.post("/api/users/:_id/exercises", async (req, res) => {
+  if ((await ExerciseLog.count()) >= 5) {
+    return res.json({ error: "limit reached" });
+  }
+
+  const user = await User.findByPk(req.params.id);
+  if (user === null) {
+    return res.json({ error: "user not exists" });
+  }
+
+  if (req.body.description === null || req.body.description === "") {
+    return res.json({ error: "description is empty" });
+  }
+
+  if (req.body.duration === null || req.body.duration === "") {
+    return res.json({ error: "duration is empty" });
+  }
+
+  const exerciseLog = await ExerciseLog.create({ user_id: req.params.id, description: req.body.description, duration: req.body.duration, date: req.body.date });
+  res.json({
+    username: user.username,
+    description: exerciseLog.description,
+    duration: exerciseLog.duration,
+    date: exerciseLog.date,
+    _id: user.id,
+  });
 });
 
 const listener = app.listen(process.env.PORT || 3000, () => {
