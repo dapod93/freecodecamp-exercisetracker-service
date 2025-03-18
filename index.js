@@ -124,7 +124,7 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
 });
 
 app.get("/api/users/:_id/logs", async (req, res) => {
-  const [from, to, limit] = req.query;
+  const { from, to, limit } = req.query;
   const user = await User.findByPk(req.params._id);
   if (user === null) {
     return res.json({ error: "user not found" });
@@ -138,21 +138,32 @@ app.get("/api/users/:_id/logs", async (req, res) => {
   const exerciseLogs = await ExerciseLog.findAll({
     where: {
       user_id: user.id,
-      date:
-        from && to
-          ? {
-              [Op.gte]: new Date(from),
-              [Op.lte]: new Date(to),
-            }
-          : from
-          ? { [Op.gte]: new Date(from) }
-          : to
-          ? { [Op.lte]: new Date(to) }
-          : undefined,
+      ...(from || to
+        ? {
+            date:
+              from && to
+                ? {
+                    [Op.gte]: new Date(from),
+                    [Op.lte]: new Date(to),
+                  }
+                : from
+                ? { [Op.gte]: new Date(from) }
+                : to
+                ? { [Op.lte]: new Date(to) }
+                : undefined,
+          }
+        : {}),
     },
     limit: limit ? parseInt(limit, 10) : 5,
     order: [["date", "DESC"]],
   });
+  const newExerciseLogs = exerciseLogs.map((exerciseLog) => ({
+    description: exerciseLog.description,
+    duration: exerciseLog.duration,
+    date: new Date(exerciseLog.date).toDateString(),
+  }));
+
+  res.json({ username: user.username, count: logCount, _id: user.id, log: newExerciseLogs });
 });
 
 const listener = app.listen(process.env.PORT || 3000, () => {
