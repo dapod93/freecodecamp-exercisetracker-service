@@ -139,6 +139,26 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
   });
 });
 
+app.get("/api/user/:_id/exercises", async (req, res) => {
+  const user = await User.findByPk(req.params._id);
+  if (user === null) {
+    return res.json({ error: "user not found" });
+  }
+
+  const exercises = await ExerciseLog.findAll({ where: { user_id: user.id } });
+  const newExercises = exercises.map((exercise) => ({
+    description: exercise.description,
+    duration: exercise.duration,
+    date: new Date(exercise.date),
+  }));
+
+  res.json({
+    username: user.username,
+    _id: user.id,
+    exercises: newExercises,
+  });
+});
+
 app.get("/api/users/:_id/logs", async (req, res) => {
   const { from, to, limit } = req.query;
   const user = await User.findByPk(req.params._id);
