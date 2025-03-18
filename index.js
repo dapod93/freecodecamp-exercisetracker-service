@@ -158,7 +158,7 @@ app.get("/api/users/:_id/exercises", async (req, res) => {
   res.json({
     username: user.username,
     _id: user.id,
-    exercises: newExercises,
+    exercise: newExercises,
   });
 });
 
