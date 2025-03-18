@@ -39,8 +39,22 @@ app.get("/", (req, res) => {
   res.sendFile(__dirname + "/views/index.html");
 });
 
-app.get("/api/", async (req, res) => {
-  res.sendFile(__dirname + "/views/index.html");
+app.post("/api/users", async (req, res) => {
+  if ((await User.count()) >= 2) {
+    return res.json({ error: "limit reached" });
+  }
+
+  const inputUsername = req.body.username.trim();
+  if (inputUsername === null || inputUsername === "") {
+    return res.json({ error: "invalid username" });
+  }
+
+  if ((await User.findOne({ where: { username: inputUsername } })) !== null) {
+    return res.json({ error: "username already exists" });
+  }
+
+  const user = await User.create({ username: inputUsername });
+  res.json({ _id: user.id, username: user.username });
 });
 
 const listener = app.listen(process.env.PORT || 3000, () => {
