@@ -50,7 +50,7 @@ ExerciseLog.init(
     },
     date: {
       type: DataTypes.TIME,
-      allowNull: true,
+      allowNull: false,
     },
   },
   { sequelize, modelName: "exercise_logs" }
@@ -86,8 +86,8 @@ app.post("/api/users", async (req, res) => {
 
   const user = await User.create({ username: inputUsername });
   res.json({
-    username: user.username,
     _id: user.id,
+    username: user.username,
   });
 });
 
@@ -98,8 +98,8 @@ app.get("/api/users", async (req, res) => {
   }
 
   const newUsers = users.map((user) => ({
-    username: user.username,
     _id: user.id,
+    username: user.username,
   }));
 
   res.json(newUsers);
@@ -128,16 +128,14 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
     user_id: user.id,
     description: req.body.description,
     duration: req.body.duration,
-    date: req.body.date,
+    date: req.body.date ? req.body.date : new Date(),
   });
   res.json({
-    username: user.username,
     _id: user.id,
-    exercise: {
-      description: exerciseLog.description,
-      duration: exerciseLog.duration,
-      date: new Date(exerciseLog.date).toDateString(),
-    },
+    username: user.username,
+    description: exerciseLog.description,
+    duration: exerciseLog.duration,
+    date: new Date(exerciseLog.date).toDateString(),
   });
 });
 
@@ -182,9 +180,9 @@ app.get("/api/users/:_id/logs", async (req, res) => {
   }));
 
   res.json({
+    _id: user.id,
     username: user.username,
     count: logCount,
-    _id: user.id,
     log: newExerciseLogs,
   });
 });
