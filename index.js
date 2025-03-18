@@ -112,9 +112,9 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
   }
 
   // To prevent database spamming, since using free deployment platform
-  // if ((await ExerciseLog.count({ where: { user_id: user.id } })) >= 5) {
-  //   return res.json({ error: "limit reached" });
-  // }
+  if ((await ExerciseLog.count({ where: { user_id: user.id } })) >= 5) {
+    return res.json({ error: "limit reached" });
+  }
 
   if (req.body.description === null || req.body.description === "") {
     return res.json({ error: "description is empty" });
