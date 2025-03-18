@@ -145,7 +145,10 @@ app.get("/api/users/:_id/exercises", async (req, res) => {
     return res.json({ error: "user not found" });
   }
 
-  const exercises = await ExerciseLog.findAll({ where: { user_id: user.id } });
+  const exercises = await ExerciseLog.findAll({
+    where: { user_id: user.id },
+    order: [["date", "DESC"]],
+  });
   const newExercises = exercises.map((exercise) => ({
     description: exercise.description,
     duration: exercise.duration,
