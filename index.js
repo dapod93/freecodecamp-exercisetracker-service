@@ -1,7 +1,9 @@
-const express = require("express");
-const app = express();
-const cors = require("cors");
 require("dotenv").config();
+const cors = require("cors");
+const express = require("express");
+const { Sequelize, Model, DataTypes } = require("sequelize");
+
+const app = express();
 
 app.use(cors());
 app.use(express.static("public"));
