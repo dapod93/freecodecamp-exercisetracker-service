@@ -139,7 +139,7 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
   });
 });
 
-app.get("/api/user/:_id/exercises", async (req, res) => {
+app.get("/api/users/:_id/exercises", async (req, res) => {
   const user = await User.findByPk(req.params._id);
   if (user === null) {
     return res.json({ error: "user not found" });
