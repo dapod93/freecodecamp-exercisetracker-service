@@ -134,7 +134,7 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
     _id: user.id,
     username: user.username,
     date: new Date(exerciseLog.date).toDateString(),
-    duration: exerciseLog.duration,
+    duration: parseInt(exerciseLog.duration, 10),
     description: exerciseLog.description,
   });
 });
